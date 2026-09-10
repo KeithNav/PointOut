@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Acme Redesign — Demo</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; padding: 48px; max-width: 720px; color: #111827; }
+  h1 { margin-top: 0; }
+  img { max-width: 100%; border-radius: 12px; }
+  .badge { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  .badge.client { background: #eef2ff; color: #4338ca; }
+  .badge.developer { background: #ecfdf5; color: #047857; }
+</style>
+</head>
+<body>
+  <span id="badge" class="badge client">Client view</span>
+  <h1>Acme Redesign — Demo</h1>
+  <p>This is the single URL both sides open — the developer sends this exact link to the client. Click the <strong>PO</strong> bubble in the bottom-right corner, pick a tool, and mark up anything you'd like changed. Everyone on this page sees the same annotations live.</p>
+  <img src="https://picsum.photos/700/300" alt="placeholder hero" />
+  <p>Viewing as developer? Open <a href="?role=developer">this same page with <code>?role=developer</code></a> instead — same URL, same annotations, just with resolve/delete rights.</p>
+
+  <!-- Build the SDK first: npm run build --workspace packages/core -->
+  <script src="../../packages/core/dist/pointout.iife.js"></script>
+  <script>
+    const isDeveloper = new URLSearchParams(location.search).get('role') === 'developer';
+    document.title = isDeveloper ? 'Acme Redesign — Demo (Developer view)' : 'Acme Redesign — Demo (Client view)';
+    const badge = document.getElementById('badge');
+    badge.textContent = isDeveloper ? 'Developer view' : 'Client view';
+    badge.classList.toggle('developer', isDeveloper);
+    badge.classList.toggle('client', !isDeveloper);
+
+    PointOut.init({
+      project: 'acme-redesign',
+      // Reuses whatever host this page was opened with (localhost or a LAN IP), so the same
+      // file works whether you're testing on one machine or across a PC + phone.
+      server: `ws://${location.hostname}:8787`,
+      token: 'local-dev-secret',
+      user: { name: isDeveloper ? 'Developer' : 'Client', role: isDeveloper ? 'developer' : 'client' },
+    });
+  </script>
+</body>
+</html>
