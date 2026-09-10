@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Acme Redesign — Demo (Client view)</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; padding: 48px; max-width: 720px; color: #111827; }
+  h1 { margin-top: 0; }
+  img { max-width: 100%; border-radius: 12px; }
+  .badge { display: inline-block; background: #eef2ff; color: #4338ca; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+</style>
+</head>
+<body>
+  <span class="badge">Client view</span>
+  <h1>Acme Redesign — Demo</h1>
+  <p>This is a sample static page, exactly the kind a freelancer would send a client to review. Click the <strong>PO</strong> bubble in the bottom-right corner, pick a tool, and mark up anything you'd like changed.</p>
+  <img src="https://picsum.photos/700/300" alt="placeholder hero" />
+  <p>Anything drawn here shows up live for the developer too (open <a href="developer.html">developer.html</a> side by side).</p>
+
+  <!-- Build the SDK first: npm run build --workspace packages/core -->
+  <script src="../../packages/core/dist/pointout.iife.js"></script>
+  <script>
+    PointOut.init({
+      project: 'acme-redesign',
+      server: 'ws://localhost:8787',
+      token: 'local-dev-secret',
+      user: { name: 'Client', role: 'client' },
+    });
+  </script>
+</body>
+</html>

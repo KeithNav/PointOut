@@ -1,0 +1,30 @@
+{
+  "name": "pointout-sdk",
+  "version": "0.1.0",
+  "description": "Drop-in overlay widget that lets clients annotate a demo website in real time and sends the feedback straight to the developer.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/pointout.cjs",
+  "module": "./dist/pointout.mjs",
+  "unpkg": "./dist/pointout.iife.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/pointout.mjs",
+      "require": "./dist/pointout.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "tsc --emitDeclarationOnly && vite build"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "vite": "^5.4.0"
+  }
+}

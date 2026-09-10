@@ -1,0 +1,13 @@
+services:
+  pointout-server:
+    build: .
+    ports:
+      - "8787:8787"
+    environment:
+      - PORT=8787
+      - POINTOUT_API_KEY=${POINTOUT_API_KEY:-change-me}
+      - POINTOUT_CORS_ORIGINS=${POINTOUT_CORS_ORIGINS:-*}
+    volumes:
+      - pointout-data:/app/data
+volumes:
+  pointout-data:
