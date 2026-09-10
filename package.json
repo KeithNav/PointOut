@@ -4,6 +4,12 @@
   "version": "0.1.0",
   "description": "PointOut – an open-source overlay widget that lets clients annotate a live demo website and send visual feedback straight to the developer.",
   "license": "MIT",
+  "homepage": "https://github.com/KeithNav/PointOut#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KeithNav/PointOut.git"
+  },
+  "bugs": "https://github.com/KeithNav/PointOut/issues",
   "workspaces": [
     "packages/*"
   ],

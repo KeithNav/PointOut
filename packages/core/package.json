@@ -3,6 +3,22 @@
   "version": "0.1.0",
   "description": "Drop-in overlay widget that lets clients annotate a demo website in real time and sends the feedback straight to the developer.",
   "license": "MIT",
+  "homepage": "https://github.com/KeithNav/PointOut#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KeithNav/PointOut.git",
+    "directory": "packages/core"
+  },
+  "bugs": "https://github.com/KeithNav/PointOut/issues",
+  "keywords": [
+    "feedback",
+    "annotation",
+    "overlay",
+    "client-feedback",
+    "widget",
+    "freelance"
+  ],
+  "author": "PointOut Contributors",
   "type": "module",
   "main": "./dist/pointout.cjs",
   "module": "./dist/pointout.mjs",
