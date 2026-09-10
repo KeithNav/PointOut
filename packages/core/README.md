@@ -37,6 +37,8 @@ PointOut.init({
 
 Omit `server` to run in `local` mode — annotations are kept in `localStorage` and synced across tabs of the same browser. Great for trying the widget out before deploying the relay server.
 
+See the [full integration guide](../../docs/INTEGRATION.md) for framework-specific snippets (React, Vue, WordPress, Wix, Webflow) and a config reference table.
+
 ## API
 
 - `PointOut.init(config)` — mounts the overlay, returns an instance.

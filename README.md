@@ -67,6 +67,8 @@ Then, on the demo site:
 
 No backend yet? Drop `server`/`token` entirely and PointOut runs in `local` mode, persisting to `localStorage` — perfect for a quick local trial. See [examples/plain-html](examples/plain-html) for a full working pair of pages.
 
+For the full config reference, framework-specific snippets (React, Vue, WordPress, Wix, Webflow) and a production checklist, see the **[Integration guide](docs/INTEGRATION.md)**.
+
 ## Features (v0.1)
 
 - Tools: select/move, pin + comment, rectangle/circle-an-area, arrow, freehand pen, text label.
