@@ -302,6 +302,7 @@ export class Overlay {
         return;
       }
 
+      this.svg.setPointerCapture(e.pointerId);
       start = p;
       if (this.tool === 'pen') {
         penPoints = [p];
@@ -329,6 +330,7 @@ export class Overlay {
     const finish = (e: PointerEvent) => {
       if (!start) return;
       const p = docPoint(e);
+      if (this.svg.hasPointerCapture(e.pointerId)) this.svg.releasePointerCapture(e.pointerId);
       preview?.remove();
       preview = null;
 
@@ -573,8 +575,6 @@ export class Overlay {
     const box = document.createElement('div');
     box.className = 'po-popover';
     box.setAttribute('data-popover-for', annotation.id);
-    box.style.left = `${px}px`;
-    box.style.top = `${py}px`;
 
     const head = document.createElement('div');
     head.className = 'po-popover-head';
@@ -673,7 +673,24 @@ export class Overlay {
 
     box.appendChild(actions);
     this.popoverLayer.appendChild(box);
+    this.positionPopover(box, px, py);
     focusTarget.focus();
+  }
+
+  private positionPopover(box: HTMLDivElement, anchorX: number, anchorY: number) {
+    const margin = 12;
+    const { width, height } = box.getBoundingClientRect();
+    const minX = window.scrollX + margin;
+    const maxX = window.scrollX + window.innerWidth - width - margin;
+    const left = Math.max(minX, Math.min(anchorX + 10, maxX));
+    const below = anchorY + 10;
+    const above = anchorY - height - 10;
+    const minY = window.scrollY + margin;
+    const maxY = window.scrollY + window.innerHeight - height - margin;
+    const top = below + height <= window.scrollY + window.innerHeight - margin ? below : above;
+
+    box.style.left = `${left}px`;
+    box.style.top = `${Math.max(minY, Math.min(top, maxY))}px`;
   }
 
   // ---- Sizing & lifecycle ----------------------------------------------

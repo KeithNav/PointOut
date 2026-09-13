@@ -35,7 +35,7 @@ flowchart LR
 
 | Package | Description |
 | --- | --- |
-| [`packages/core`](packages/core) | `pointout-sdk` — the browser widget (toolbar, drawing tools, overlay rendering). Ships as ESM/CJS/IIFE, zero required build tooling for consumers. |
+| [`packages/core`](packages/core) | [`@keithnav/pointout-sdk`](https://www.npmjs.com/package/@keithnav/pointout-sdk) — the browser widget (toolbar, drawing tools, overlay rendering). Ships as ESM/CJS/IIFE, zero required build tooling for consumers. |
 | [`packages/server`](packages/server) | `pointout-server` — self-hostable Node.js relay (WebSocket + REST) with SQLite persistence, Docker-ready. |
 | [`examples/plain-html`](examples/plain-html) | Minimal two-page example (client + developer view) showing live sync. |
 
@@ -54,7 +54,7 @@ npm run dev                                  # relay running on :8787
 Then, on the demo site:
 
 ```html
-<script src="https://unpkg.com/pointout-sdk/dist/pointout.iife.js"></script>
+<script src="https://unpkg.com/@keithnav/pointout-sdk@0.1.0/dist/pointout.iife.js"></script>
 <script>
   PointOut.init({
     project: 'acme-redesign',

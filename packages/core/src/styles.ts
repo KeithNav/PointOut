@@ -3,7 +3,7 @@ export const STYLES = `
 .po-root {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
-.po-canvas { position: absolute; top: 0; left: 0; pointer-events: none; }
+.po-canvas { position: absolute; top: 0; left: 0; pointer-events: none; touch-action: none; }
 .po-popover-layer { position: absolute; top: 0; left: 0; pointer-events: none; }
 .po-popover-layer .po-popover { pointer-events: auto; }
 
@@ -108,8 +108,11 @@ export const STYLES = `
   right: 24px;
   bottom: 94px;
   display: flex;
+  flex-wrap: wrap;
   gap: 4px;
   align-items: center;
+  justify-content: center;
+  max-width: calc(100vw - 32px);
   background: rgba(15, 23, 42, .94);
   backdrop-filter: blur(14px);
   padding: 7px;
@@ -164,7 +167,10 @@ export const STYLES = `
 
 .po-popover {
   position: absolute;
-  width: 240px;
+  width: min(280px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  box-sizing: border-box;
+  overflow-y: auto;
   background: #fff;
   color: #111827;
   border-radius: 12px;
@@ -214,7 +220,7 @@ export const STYLES = `
   min-height: 48px !important;
   margin-top: 8px;
 }
-.po-popover-actions { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+.po-popover-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; }
 .po-resolve { display: flex; align-items: center; gap: 4px; font-size: 11px; color: #374151; margin-right: auto; }
 .po-popover button { border: none; border-radius: 7px; padding: 5px 10px; font-size: 12px; cursor: pointer; }
 .po-save { background: #2563eb; color: #fff; }
@@ -287,7 +293,7 @@ export const STYLES = `
   font-size: 16px;
 }
 .po-issue-panel-close:hover { background: #f1f5f9; color: #0f172a; }
-.po-issue-list { display: grid; align-content: start; gap: 9px; padding: 12px; overflow-y: auto; }
+.po-issue-list { display: grid; flex: 1; min-height: 0; align-content: start; gap: 9px; padding: 12px; overflow-y: auto; }
 .po-issue-empty { margin: 20px 8px; color: #64748b; font-size: 13px; line-height: 1.5; text-align: center; }
 .po-issue-item {
   display: grid;
@@ -335,8 +341,35 @@ export const STYLES = `
 .po-issue-resolve:hover { background: #e0e7ff; }
 
 @media (max-width: 480px) {
-  .po-bubble { right: 16px; bottom: 16px; min-width: 154px; }
-  .po-toolbar { right: 16px; bottom: 86px; }
-  .po-issue-panel { top: 12px; right: 12px; bottom: 12px; width: calc(100vw - 24px); }
+  .po-bubble {
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+    min-width: 0;
+    width: 154px;
+  }
+  .po-toolbar {
+    right: max(12px, env(safe-area-inset-right));
+    bottom: calc(max(12px, env(safe-area-inset-bottom)) + 70px);
+    max-width: calc(100vw - 24px);
+  }
+  .po-tool-btn { width: 42px; height: 42px; }
+  .po-color { width: 34px; height: 34px; }
+  .po-hide-btn { height: 38px; }
+  .po-popover { font-size: 16px; }
+  .po-popover-head { font-size: 12px; }
+  .po-popover textarea { min-height: 88px; font-size: 16px; }
+  .po-popover button { min-height: 38px; font-size: 13px; }
+  .po-issue-panel {
+    top: max(8px, env(safe-area-inset-top));
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(8px, env(safe-area-inset-bottom));
+    width: calc(100vw - 16px);
+    border-radius: 16px;
+  }
+  .po-issue-panel-head { padding: 14px 12px; }
+  .po-issue-panel-logo { width: 42px; height: 42px; margin-right: 8px; }
+  .po-issue-panel-logo svg { width: 34px; height: 34px; }
+  .po-issue-panel h2 { font-size: 18px; }
+  .po-issue-list { padding: 8px; }
 }
 `;

@@ -1,15 +1,15 @@
-# pointout-sdk
+# @keithnav/pointout-sdk
 
 The client-side widget of [PointOut](../../README.md) — an open-source overlay that lets clients draw pins, shapes, arrows and notes directly on a live demo page, synced in real time to the developer.
 
 ## Install
 
 ```bash
-npm install pointout-sdk
+npm install @keithnav/pointout-sdk
 ```
 
 ```js
-import PointOut from 'pointout-sdk';
+import PointOut from '@keithnav/pointout-sdk';
 
 PointOut.init({
   project: 'acme-redesign',
@@ -22,7 +22,7 @@ PointOut.init({
 ## Or just a `<script>` tag (no build step)
 
 ```html
-<script src="https://unpkg.com/pointout-sdk/dist/pointout.iife.js"></script>
+<script src="https://unpkg.com/@keithnav/pointout-sdk@0.1.0/dist/pointout.iife.js"></script>
 <script>
   PointOut.init({
     project: 'acme-redesign',

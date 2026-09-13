@@ -1,5 +1,5 @@
 {
-  "name": "pointout-sdk",
+  "name": "@keithnav/pointout-sdk",
   "version": "0.1.0",
   "description": "Drop-in overlay widget that lets clients annotate a demo website in real time and sends the feedback straight to the developer.",
   "license": "MIT",
@@ -32,12 +32,18 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE"
   ],
   "sideEffects": false,
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
     "dev": "vite build --watch",
-    "build": "tsc --emitDeclarationOnly && vite build"
+    "build": "tsc --emitDeclarationOnly && vite build",
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "typescript": "^5.5.4",

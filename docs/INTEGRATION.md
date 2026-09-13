@@ -146,7 +146,7 @@ your-project/
 
 The browser can now load it from `/pointout/pointout.iife.js`. This is the most reliable option because you serve the exact PointOut version that you built.
 
-If you have already published `pointout-sdk` to npm, you can install and import it instead with `npm install pointout-sdk`. Before publishing, do not link to `unpkg.com`: the version you need may not exist there.
+Once the package is published, you can install and import it with `npm install @keithnav/pointout-sdk`, or use the versioned CDN URL `https://unpkg.com/@keithnav/pointout-sdk@0.1.0/dist/pointout.iife.js`.
 
 ### 2. Add the initialization code
 
@@ -198,7 +198,7 @@ When using the installed npm package, initialization must run only in the browse
 
 ```jsx
 import { useEffect } from 'react';
-import PointOut from 'pointout-sdk';
+import PointOut from '@keithnav/pointout-sdk';
 
 export function PointOutFeedback() {
   useEffect(() => {
@@ -225,7 +225,7 @@ If you are not using the npm package, copy the built IIFE file to the `public` d
 ```vue
 <script setup>
 import { onMounted, onUnmounted } from 'vue';
-import PointOut from 'pointout-sdk';
+import PointOut from '@keithnav/pointout-sdk';
 
 let instance;
 
