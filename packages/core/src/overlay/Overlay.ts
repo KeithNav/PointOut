@@ -1,6 +1,6 @@
 import type { Annotation, PointOutUser, ToolType } from '../types';
 import { STYLES } from '../styles';
-import { docSize, escapeHtml, toPercent, toPixels } from '../utils/geometry';
+import { docSize, escapeHtml, toPixels } from '../utils/geometry';
 import wordmarkUrl from '../assets/pointout-wordmark.png?inline';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -19,7 +19,7 @@ const BRAND_MARK = `
 
 type Pt = { x: number; y: number };
 
-export type NewAnnotationInput = Pick<Annotation, 'type' | 'x' | 'y' | 'width' | 'height' | 'points' | 'color' | 'message'>;
+export type NewAnnotationInput = Pick<Annotation, 'type' | 'x' | 'y' | 'width' | 'height' | 'points' | 'coordinateSpace' | 'color' | 'message'>;
 
 export interface OverlayOptions {
   color: string;
@@ -354,15 +354,15 @@ export class Overlay {
   }
 
   private finishShape(type: Exclude<ToolType, 'pointer'>, geom: { x?: number; y?: number; width?: number; height?: number; points?: Pt[] }) {
-    const { width: dw, height: dh } = docSize();
     const input: NewAnnotationInput = {
       type,
       color: this.color,
-      x: geom.x !== undefined ? toPercent(geom.x, dw) : undefined,
-      y: geom.y !== undefined ? toPercent(geom.y, dh) : undefined,
-      width: geom.width !== undefined ? toPercent(geom.width, dw) : undefined,
-      height: geom.height !== undefined ? toPercent(geom.height, dh) : undefined,
-      points: geom.points?.map((pt) => ({ x: toPercent(pt.x, dw), y: toPercent(pt.y, dh) })),
+      coordinateSpace: 'document',
+      x: geom.x,
+      y: geom.y,
+      width: geom.width,
+      height: geom.height,
+      points: geom.points,
       message: undefined,
     };
     const annotation = this.opts.onCreate(input);
@@ -454,8 +454,8 @@ export class Overlay {
     g.style.pointerEvents = 'auto';
     g.style.cursor = 'pointer';
 
-    const px = toPixels(annotation.x ?? 0, dw);
-    const py = toPixels(annotation.y ?? 0, dh);
+    const px = this.toDocumentPixels(annotation, annotation.x ?? 0, dw);
+    const py = this.toDocumentPixels(annotation, annotation.y ?? 0, dh);
 
     switch (annotation.type) {
       case 'pin': {
@@ -481,8 +481,8 @@ export class Overlay {
         const rect = document.createElementNS(SVG_NS, 'rect');
         rect.setAttribute('x', String(px));
         rect.setAttribute('y', String(py));
-        rect.setAttribute('width', String(toPixels(annotation.width ?? 0, dw)));
-        rect.setAttribute('height', String(toPixels(annotation.height ?? 0, dh)));
+        rect.setAttribute('width', String(this.toDocumentPixels(annotation, annotation.width ?? 0, dw)));
+        rect.setAttribute('height', String(this.toDocumentPixels(annotation, annotation.height ?? 0, dh)));
         rect.setAttribute('rx', '6');
         rect.setAttribute('fill', withAlpha(annotation.color, 0.12));
         rect.setAttribute('stroke', annotation.color);
@@ -491,7 +491,10 @@ export class Overlay {
         break;
       }
       case 'arrow': {
-        const pts = (annotation.points ?? []).map((p) => ({ x: toPixels(p.x, dw), y: toPixels(p.y, dh) }));
+        const pts = (annotation.points ?? []).map((p) => ({
+          x: this.toDocumentPixels(annotation, p.x, dw),
+          y: this.toDocumentPixels(annotation, p.y, dh),
+        }));
         const markerId = `po-arrow-${annotation.id}`;
         const marker = document.createElementNS(SVG_NS, 'marker');
         marker.setAttribute('id', markerId);
@@ -518,7 +521,9 @@ export class Overlay {
         break;
       }
       case 'pen': {
-        const points = (annotation.points ?? []).map((p) => `${toPixels(p.x, dw)},${toPixels(p.y, dh)}`).join(' ');
+        const points = (annotation.points ?? [])
+          .map((p) => `${this.toDocumentPixels(annotation, p.x, dw)},${this.toDocumentPixels(annotation, p.y, dh)}`)
+          .join(' ');
         const poly = document.createElementNS(SVG_NS, 'polyline');
         poly.setAttribute('points', points);
         poly.setAttribute('fill', 'none');
@@ -565,8 +570,8 @@ export class Overlay {
     this.popoverLayer.querySelectorAll('.po-popover').forEach((el) => el.remove());
     const { width: dw, height: dh } = docSize();
     const anchor = annotation.points?.[0] ?? { x: annotation.x ?? 0, y: annotation.y ?? 0 };
-    const px = toPixels(anchor.x, dw);
-    const py = toPixels(anchor.y, dh);
+    const px = this.toDocumentPixels(annotation, anchor.x, dw);
+    const py = this.toDocumentPixels(annotation, anchor.y, dh);
 
     const canEdit = this.opts.user.role === 'developer' || annotation.author.name === this.opts.user.name;
     const canResolve = this.opts.user.role === 'developer';
@@ -694,6 +699,10 @@ export class Overlay {
   }
 
   // ---- Sizing & lifecycle ----------------------------------------------
+
+  private toDocumentPixels(annotation: Annotation, value: number, total: number) {
+    return annotation.coordinateSpace === 'document' ? value : toPixels(value, total);
+  }
 
   private observeResize() {
     const update = () => this.updateCanvasSize();

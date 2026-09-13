@@ -20,7 +20,7 @@ export interface AnnotationComment {
   createdAt: number;
 }
 
-/** A single mark left on the page. Coordinates are percentages (0-100) of the full document size, so they stay roughly in place across viewport sizes. */
+/** A single mark left on the page. New annotations use document-pixel coordinates; annotations without `coordinateSpace` retain the legacy percentage format. */
 export interface Annotation {
   id: string;
   type: AnnotationType;
@@ -30,6 +30,7 @@ export interface Annotation {
   width?: number;
   height?: number;
   points?: Point[];
+  coordinateSpace?: 'document';
   color: string;
   message?: string;
   comments?: AnnotationComment[];
