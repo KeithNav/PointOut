@@ -75,8 +75,9 @@ export class Overlay {
     this.color = opts.color;
     this.host = document.createElement('div');
     this.host.setAttribute('data-pointout-host', '');
-    this.host.style.cssText = 'all:initial; position:absolute; top:0; left:0; width:0; height:0; z-index:2147483647;';
-    document.documentElement.appendChild(this.host);
+    this.host.style.cssText = 'all:initial; position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:2147483647;';
+    // A body child keeps fixed toolbar controls anchored to the viewport on mobile browsers.
+    (document.body ?? document.documentElement).appendChild(this.host);
     this.shadow = this.host.attachShadow({ mode: 'open' });
     this.build();
     this.observeResize();
@@ -714,6 +715,8 @@ export class Overlay {
 
   private updateCanvasSize() {
     const { width, height } = docSize();
+    this.host.style.width = `${width}px`;
+    this.host.style.height = `${height}px`;
     this.svg.setAttribute('width', String(width));
     this.svg.setAttribute('height', String(height));
     this.svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
