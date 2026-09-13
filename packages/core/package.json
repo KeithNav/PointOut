@@ -1,6 +1,6 @@
 {
   "name": "@keithnav/pointout-sdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Drop-in overlay widget that lets clients annotate a demo website in real time and sends the feedback straight to the developer.",
   "license": "MIT",
   "homepage": "https://github.com/KeithNav/PointOut#readme",

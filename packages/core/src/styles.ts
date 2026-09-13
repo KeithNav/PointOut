@@ -345,16 +345,31 @@ export const STYLES = `
     right: max(12px, env(safe-area-inset-right));
     bottom: max(12px, env(safe-area-inset-bottom));
     min-width: 0;
-    width: 154px;
+    width: min(192px, calc(100vw - 24px));
+    box-sizing: border-box;
+  }
+  .po-bubble-wordmark {
+    max-width: 100%;
   }
   .po-toolbar {
+    left: max(12px, env(safe-area-inset-left));
     right: max(12px, env(safe-area-inset-right));
     bottom: calc(max(12px, env(safe-area-inset-bottom)) + 70px);
-    max-width: calc(100vw - 24px);
+    max-width: none;
+    box-sizing: border-box;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
   }
-  .po-tool-btn { width: 42px; height: 42px; }
+  .po-toolbar::-webkit-scrollbar {
+    display: none;
+  }
+  .po-tool-btn { width: 42px; height: 42px; flex: 0 0 42px; }
   .po-color { width: 34px; height: 34px; }
-  .po-hide-btn { height: 38px; }
+  .po-hide-btn { order: -1; height: 38px; flex: 0 0 auto; }
   .po-popover { font-size: 16px; }
   .po-popover-head { font-size: 12px; }
   .po-popover textarea { min-height: 88px; font-size: 16px; }
