@@ -107,7 +107,25 @@ Contributions and idea discussions are very welcome — open an issue or a PR.
 
 ## Support the project
 
-PointOut is free and MIT-licensed. If it saves you time, consider supporting development via GitHub Sponsors / Ko-fi / Patreon (links on the repo's GitHub page).
+### Donation
+
+PointOut is free and MIT-licensed. If it saves you time, you can support its development through Donably.
+
+**Your supporter page link to share on social media**
+
+**Támogatói oldalad linkje, hogy megoszd a közösségi felületeiden**
+
+[https://www.donably.com/pointout](https://www.donably.com/pointout)
+
+### Your QR code
+
+### QR-kódod
+
+Promote your page by displaying a QR code.
+
+Népszerűsítsd az oldalad egy QR-kód megjelenítésével.
+
+[![PointOut Donably QR-kód](docs/assets/donably-qr-pointout.png)](https://www.donably.com/pointout)
 
 ## License
 
