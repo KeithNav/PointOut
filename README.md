@@ -41,9 +41,27 @@ flowchart LR
 
 ## Quick start
 
+Install the SDK in an existing JavaScript/TypeScript project:
+
 ```bash
-npm install
-npm run build --workspace packages/core     # builds packages/core/dist/*
+npm install @keithnav/pointout-sdk
+```
+
+```js
+import PointOut from '@keithnav/pointout-sdk';
+
+PointOut.init({
+  project: 'acme-redesign',
+  server: 'https://your-relay.example.com',
+  token: 'your-shared-secret',
+  user: { name: 'Jane', role: 'client' },
+});
+```
+
+Then run your own relay server:
+
+```bash
+# Clone this repository first, then:
 
 cd packages/server
 cp .env.example .env                        # set POINTOUT_API_KEY
@@ -51,7 +69,7 @@ npm install
 npm run dev                                  # relay running on :8787
 ```
 
-Then, on the demo site:
+For a no-build setup such as plain HTML, WordPress, Wix, or Webflow, load the versioned CDN bundle instead:
 
 ```html
 <script src="https://unpkg.com/@keithnav/pointout-sdk@0.1.0/dist/pointout.iife.js"></script>

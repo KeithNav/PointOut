@@ -11,7 +11,7 @@ One relay server can serve multiple client projects. The `project` identifier ke
 
 You will need:
 
-- Node.js 18+ and npm for local testing or building;
+- Node.js 18+ and npm in the project where you install PointOut;
 - a public HTTPS domain for the relay, for example `https://pointout.example.com`;
 - the public URL of the demo website, for example `https://demo.client.com`.
 
@@ -126,34 +126,35 @@ curl https://pointout.example.com/api/health
 
 ## Add the widget to the demo website
 
-### 1. Build and serve the browser file
+### 1. Install the SDK from npm (recommended)
 
-From the repository root:
+From your website project's directory:
 
 ```bash
-npm install
-npm run build --workspace packages/core
+npm install @keithnav/pointout-sdk
 ```
 
-This creates `packages/core/dist/pointout.iife.js`. Copy it into your website's public static directory, for example:
+Then initialize it in a browser-only entry point:
 
-```text
-your-project/
-  public/
-    pointout/
-      pointout.iife.js
+```js
+import PointOut from '@keithnav/pointout-sdk';
+
+PointOut.init({
+  project: 'acme-website-2026',
+  server: 'https://pointout.example.com',
+  token: 'put-a-long-random-secret-here',
+  user: { name: 'Client', role: 'client' },
+});
 ```
 
-The browser can now load it from `/pointout/pointout.iife.js`. This is the most reliable option because you serve the exact PointOut version that you built.
+For React, Vue, Next.js, and Vite placement details, see [Frameworks](#frameworks).
 
-Once the package is published, you can install and import it with `npm install @keithnav/pointout-sdk`, or use the versioned CDN URL `https://unpkg.com/@keithnav/pointout-sdk@0.1.0/dist/pointout.iife.js`.
+### 2. Use the CDN with no build setup
 
-### 2. Add the initialization code
-
-Place this just before the closing `</body>` tag, or in your framework's client-side entry point:
+Use this option for plain HTML, WordPress, Webflow, Wix, or any site where adding npm dependencies is not practical. Place it just before the closing `</body>` tag:
 
 ```html
-<script src="/pointout/pointout.iife.js"></script>
+<script src="https://unpkg.com/@keithnav/pointout-sdk@0.1.0/dist/pointout.iife.js"></script>
 <script>
   const isDeveloper =
     new URLSearchParams(window.location.search).get('po_role') === 'developer';
@@ -171,6 +172,23 @@ Place this just before the closing `</body>` tag, or in your framework's client-
     },
   });
 </script>
+```
+
+The URL is pinned to `0.1.0`, so a later SDK release cannot unexpectedly change your production demo. Update that version deliberately when you are ready to adopt a new release.
+
+### 3. Build the browser file from source
+
+Use this only if you want to modify PointOut itself or cannot use npm/CDN distribution. From the PointOut repository root:
+
+```bash
+npm install
+npm run build --workspace packages/core
+```
+
+This creates `packages/core/dist/pointout.iife.js`. Copy it into your website's public static directory, for example `public/pointout/pointout.iife.js`, then change the CDN script URL in the previous example to:
+
+```html
+<script src="/pointout/pointout.iife.js"></script>
 ```
 
 Send the client the normal URL:
