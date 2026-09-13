@@ -72,15 +72,15 @@ For the full config reference, framework-specific snippets (React, Vue, WordPres
 ## Features (v0.1)
 
 - Tools: select/move, pin + comment, rectangle/circle-an-area, arrow, freehand pen, text label.
-- Every annotation carries an author name/role, timestamp, and an optional message.
+- Every annotation carries an author name/role, timestamp, optional message, and threaded client comments.
 - Developers can mark feedback **resolved** or delete it; clients can edit/delete their own notes.
+- A toolbar feedback list lets users browse annotations and developers resolve or reopen issues.
 - Overlay-wide **show/hide**, toggleable by either side, persisted per project.
 - Real-time sync over WebSocket, with automatic reconnect; annotations persist in SQLite so late joiners see full history.
 
 ## Roadmap ideas
 
 - Anchoring annotations to DOM elements (not just page coordinates) for better resilience across responsive breakpoints.
-- Threaded replies per annotation.
 - Screenshot/element picker tool.
 - Dashboard app for developers managing multiple client projects at once.
 - Optional pluggable transports (Supabase/Firebase/Pusher) for teams that don't want to run `packages/server` themselves.

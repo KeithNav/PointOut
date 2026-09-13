@@ -14,6 +14,12 @@ export interface PointOutUser {
   role: Role;
 }
 
+export interface AnnotationComment {
+  author: PointOutUser;
+  message: string;
+  createdAt: number;
+}
+
 /** A single mark left on the page. Coordinates are percentages (0-100) of the full document size, so they stay roughly in place across viewport sizes. */
 export interface Annotation {
   id: string;
@@ -26,6 +32,7 @@ export interface Annotation {
   points?: Point[];
   color: string;
   message?: string;
+  comments?: AnnotationComment[];
   author: PointOutUser;
   resolved: boolean;
   createdAt: number;

@@ -1,8 +1,21 @@
 import type { Annotation, PointOutUser, ToolType } from '../types';
 import { STYLES } from '../styles';
 import { docSize, escapeHtml, toPercent, toPixels } from '../utils/geometry';
+import wordmarkUrl from '../assets/pointout-wordmark.png?inline';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
+const BRAND_MARK = `
+  <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
+    <defs>
+      <linearGradient id="po-brand-gradient" x1="8" y1="7" x2="40" y2="42" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#5bb7ff"/>
+        <stop offset="1" stop-color="#1463ef"/>
+      </linearGradient>
+    </defs>
+    <circle cx="24" cy="24" r="16" stroke="url(#po-brand-gradient)" stroke-width="6"/>
+    <circle cx="24" cy="24" r="2.5" fill="#55aaff"/>
+  </svg>
+`;
 
 type Pt = { x: number; y: number };
 
@@ -18,12 +31,12 @@ export interface OverlayOptions {
 }
 
 const TOOLS: { id: ToolType; label: string; icon: string }[] = [
-  { id: 'pointer', label: 'Select', icon: '➤' },
-  { id: 'pin', label: 'Pin a comment', icon: '📍' },
-  { id: 'rect', label: 'Circle/box an area', icon: '▭' },
-  { id: 'arrow', label: 'Arrow', icon: '↗' },
-  { id: 'pen', label: 'Draw', icon: '✏️' },
-  { id: 'text', label: 'Text label', icon: 'T' },
+  { id: 'pointer', label: 'Select', icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 3 14 8-6.3 1.7L11 19 5 3Z"/><path d="m13 13 4 5"/></svg>' },
+  { id: 'pin', label: 'Pin a comment', icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 10c0 5-7 10-7 10S5 15 5 10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2.25"/></svg>' },
+  { id: 'rect', label: 'Circle or box an area', icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="3"/><path d="M8 5v3M16 16v3M20 9h-3M7 15H4"/></svg>' },
+  { id: 'arrow', label: 'Draw an arrow', icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5"/><path d="M10 5h9v9"/></svg>' },
+  { id: 'pen', label: 'Draw freehand', icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 5.5 4 4M4 20l3.8-1 10.7-10.7a2.8 2.8 0 0 0-4-4L3.8 15 4 20Z"/></svg>' },
+  { id: 'text', label: 'Add a text label', icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14M12 5v14M8 19h8"/></svg>' },
 ];
 
 function withAlpha(hex: string, alpha: number): string {
@@ -44,6 +57,11 @@ export class Overlay {
   private svg!: SVGSVGElement;
   private toolbar!: HTMLDivElement;
   private popoverLayer!: HTMLDivElement;
+  private bubble!: HTMLButtonElement;
+  private issuePanel!: HTMLElement;
+  private issueList!: HTMLDivElement;
+  private issueCount!: HTMLSpanElement;
+  private issueListButton!: HTMLButtonElement;
 
   private tool: ToolType = 'pointer';
   private color: string;
@@ -51,6 +69,7 @@ export class Overlay {
   private readonly shapeEls = new Map<string, SVGGElement>();
   private data = new Map<string, Annotation>();
   private resizeObserver?: ResizeObserver;
+  private selectedAnnotationId?: string;
 
   constructor(private readonly opts: OverlayOptions) {
     this.color = opts.color;
@@ -89,10 +108,21 @@ export class Overlay {
       btn.className = 'po-tool-btn';
       btn.dataset.tool = t.id;
       btn.title = t.label;
-      btn.textContent = t.icon;
+      btn.setAttribute('aria-label', t.label);
+      btn.innerHTML = t.icon;
       btn.addEventListener('click', () => this.setTool(t.id));
       this.toolbar.appendChild(btn);
     });
+
+    this.issueListButton = document.createElement('button');
+    this.issueListButton.type = 'button';
+    this.issueListButton.className = 'po-tool-btn po-list-btn';
+    this.issueListButton.title = 'Open feedback list';
+    this.issueListButton.setAttribute('aria-label', 'Open feedback list');
+    this.issueListButton.setAttribute('aria-expanded', 'false');
+    this.issueListButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h11M8 12h11M8 18h11"/><path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg>';
+    this.issueListButton.addEventListener('click', () => this.toggleIssuePanel());
+    this.toolbar.appendChild(this.issueListButton);
 
     const colorInput = document.createElement('input');
     colorInput.type = 'color';
@@ -114,13 +144,43 @@ export class Overlay {
 
     this.root.appendChild(this.toolbar);
 
-    const bubble = document.createElement('button');
-    bubble.type = 'button';
-    bubble.className = 'po-bubble';
-    bubble.title = 'Toggle PointOut feedback';
-    bubble.textContent = 'PO';
-    bubble.addEventListener('click', () => this.opts.onVisibilityToggle(!this.visible));
-    this.root.appendChild(bubble);
+    this.issuePanel = document.createElement('aside');
+    this.issuePanel.className = 'po-issue-panel';
+    this.issuePanel.setAttribute('aria-label', 'Feedback list');
+    this.issuePanel.innerHTML = `
+      <div class="po-issue-panel-head">
+        <span class="po-issue-panel-logo" aria-hidden="true">${BRAND_MARK}</span>
+        <div>
+          <h2>Feedback</h2>
+        </div>
+        <div class="po-issue-panel-actions">
+          <span class="po-issue-count">0</span>
+          <button type="button" class="po-issue-panel-close" aria-label="Close feedback list">✕</button>
+        </div>
+      </div>
+      <div class="po-issue-list"></div>
+    `;
+    this.issueCount = this.issuePanel.querySelector('.po-issue-count')!;
+    this.issueList = this.issuePanel.querySelector('.po-issue-list')!;
+    this.issuePanel.querySelector<HTMLButtonElement>('.po-issue-panel-close')!
+      .addEventListener('click', () => this.setIssuePanelOpen(false));
+    this.root.appendChild(this.issuePanel);
+
+    this.bubble = document.createElement('button');
+    this.bubble.type = 'button';
+    this.bubble.className = 'po-bubble';
+    this.bubble.innerHTML = `
+      <span class="po-bubble-mark" aria-hidden="true">
+        ${BRAND_MARK}
+      </span>
+      <span class="po-bubble-copy">
+        <img class="po-bubble-wordmark" src="${wordmarkUrl}" alt="PointOut" />
+        <span class="po-bubble-status">Feedback</span>
+      </span>
+      <span class="po-bubble-indicator" aria-hidden="true"></span>
+    `;
+    this.bubble.addEventListener('click', () => this.opts.onVisibilityToggle(!this.visible));
+    this.root.appendChild(this.bubble);
 
     this.updateToolButtons();
     this.attachCanvasEvents();
@@ -144,6 +204,84 @@ export class Overlay {
   setVisible(visible: boolean) {
     this.visible = visible;
     this.root.setAttribute('data-visible', String(visible));
+    this.bubble.setAttribute('aria-expanded', String(visible));
+    this.bubble.title = visible ? 'Hide PointOut feedback tools' : 'Show PointOut feedback tools';
+    const status = this.bubble.querySelector('.po-bubble-status');
+    if (status) status.textContent = visible ? 'Feedback active' : 'Open feedback';
+  }
+
+  private toggleIssuePanel() {
+    this.setIssuePanelOpen(this.issuePanel.dataset.open !== 'true');
+  }
+
+  private setIssuePanelOpen(open: boolean) {
+    this.issuePanel.dataset.open = String(open);
+    this.issueListButton.setAttribute('aria-expanded', String(open));
+    this.issueListButton.dataset.active = String(open);
+    if (open) this.renderIssueList();
+  }
+
+  private renderIssueList() {
+    const annotations = [...this.data.values()].sort((a, b) => b.createdAt - a.createdAt);
+    const unresolvedCount = annotations.filter((annotation) => !annotation.resolved).length;
+    this.issueCount.textContent = String(unresolvedCount);
+    this.issueCount.title = `${unresolvedCount} open feedback item${unresolvedCount === 1 ? '' : 's'}`;
+    this.issueList.replaceChildren();
+
+    if (!annotations.length) {
+      const empty = document.createElement('p');
+      empty.className = 'po-issue-empty';
+      empty.textContent = 'No feedback yet. Use a tool to add your first note.';
+      this.issueList.appendChild(empty);
+      return;
+    }
+
+    annotations.forEach((annotation) => {
+      const item = document.createElement('article');
+      item.className = 'po-issue-item';
+      item.dataset.selected = String(annotation.id === this.selectedAnnotationId);
+
+      const select = document.createElement('button');
+      select.type = 'button';
+      select.className = 'po-issue-select';
+      select.innerHTML = `
+        <span class="po-issue-meta">
+          <span class="po-issue-type">${this.issueTypeLabel(annotation.type)}</span>
+          <span class="po-issue-status" data-resolved="${annotation.resolved}">${annotation.resolved ? 'Resolved' : 'Open'}</span>
+        </span>
+        <strong>${escapeHtml(annotation.author.name)}</strong>
+        <span class="po-issue-message">${escapeHtml(annotation.message || 'No message yet')}</span>
+        <span class="po-issue-footer">${annotation.comments?.length ?? 0} comment${(annotation.comments?.length ?? 0) === 1 ? '' : 's'} · ${new Date(annotation.createdAt).toLocaleTimeString()}</span>
+      `;
+      select.addEventListener('click', () => {
+        this.selectedAnnotationId = annotation.id;
+        this.renderIssueList();
+        this.openPopover(annotation, false);
+      });
+      item.appendChild(select);
+
+      if (this.opts.user.role === 'developer' && annotation.type !== 'text') {
+        const resolve = document.createElement('button');
+        resolve.type = 'button';
+        resolve.className = 'po-issue-resolve';
+        resolve.textContent = annotation.resolved ? 'Reopen' : 'Resolve';
+        resolve.addEventListener('click', () => this.opts.onUpdate(annotation.id, { resolved: !annotation.resolved }));
+        item.appendChild(resolve);
+      }
+
+      this.issueList.appendChild(item);
+    });
+  }
+
+  private issueTypeLabel(type: Annotation['type']) {
+    const labels: Record<Annotation['type'], string> = {
+      pin: 'Comment pin',
+      rect: 'Area highlight',
+      arrow: 'Arrow',
+      pen: 'Drawing',
+      text: 'Text note',
+    };
+    return labels[type];
   }
 
   // ---- Drawing gestures ----------------------------------------------
@@ -284,6 +422,7 @@ export class Overlay {
   upsert(annotation: Annotation) {
     this.data.set(annotation.id, annotation);
     this.renderOne(annotation);
+    this.renderIssueList();
   }
 
   remove(id: string) {
@@ -291,6 +430,8 @@ export class Overlay {
     this.shapeEls.get(id)?.remove();
     this.shapeEls.delete(id);
     this.popoverLayer.querySelector(`[data-popover-for="${id}"]`)?.remove();
+    if (this.selectedAnnotationId === id) this.selectedAnnotationId = undefined;
+    this.renderIssueList();
   }
 
   renderAll(list: Annotation[]) {
@@ -298,6 +439,7 @@ export class Overlay {
     this.shapeEls.clear();
     this.data = new Map(list.map((a) => [a.id, a]));
     list.forEach((a) => this.renderOne(a));
+    this.renderIssueList();
   }
 
   private renderOne(annotation: Annotation) {
@@ -402,6 +544,10 @@ export class Overlay {
       }
     }
 
+    g.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+    });
+
     g.addEventListener('click', (e) => {
       e.stopPropagation();
       this.openPopover(annotation, false);
@@ -440,6 +586,19 @@ export class Overlay {
     textarea.value = annotation.message ?? '';
     textarea.disabled = !canEdit;
     box.appendChild(textarea);
+    let focusTarget: HTMLTextAreaElement = textarea;
+
+    if (annotation.comments?.length) {
+      const comments = document.createElement('div');
+      comments.className = 'po-comments';
+      annotation.comments.forEach((comment) => {
+        const item = document.createElement('div');
+        item.className = 'po-comment';
+        item.innerHTML = `<strong>${escapeHtml(comment.author.name)}</strong><span>${escapeHtml(comment.message)}</span>`;
+        comments.appendChild(item);
+      });
+      box.appendChild(comments);
+    }
 
     const actions = document.createElement('div');
     actions.className = 'po-popover-actions';
@@ -475,6 +634,32 @@ export class Overlay {
         box.remove();
       });
       actions.appendChild(deleteBtn);
+    } else {
+      const reply = document.createElement('textarea');
+      reply.className = 'po-reply';
+      reply.placeholder = 'Add a comment…';
+      reply.setAttribute('aria-label', 'Add a comment');
+      box.appendChild(reply);
+      focusTarget = reply;
+
+      const replyBtn = document.createElement('button');
+      replyBtn.className = 'po-save';
+      replyBtn.textContent = 'Comment';
+      replyBtn.addEventListener('click', () => {
+        const message = reply.value.trim();
+        if (!message) {
+          reply.focus();
+          return;
+        }
+        this.opts.onUpdate(annotation.id, {
+          comments: [
+            ...(annotation.comments ?? []),
+            { author: this.opts.user, message, createdAt: Date.now() },
+          ],
+        });
+        box.remove();
+      });
+      actions.appendChild(replyBtn);
     }
 
     const closeBtn = document.createElement('button');
@@ -488,7 +673,7 @@ export class Overlay {
 
     box.appendChild(actions);
     this.popoverLayer.appendChild(box);
-    textarea.focus();
+    focusTarget.focus();
   }
 
   // ---- Sizing & lifecycle ----------------------------------------------
